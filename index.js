@@ -40,7 +40,15 @@ app.get('/api/persons/:id', (req, res, next) => {
   if (!person) {
     return res.status(404).end()
   }
-  return res.json(person)
+
+  res.json(person)
+})
+
+app.delete('/api/persons/:id', (req, res, next) => {
+  const id = Number(req.params.id)
+  persons = persons.filter(person => person.id !== id)
+  
+  return res.status(204).end()
 })
 
 const PORT = 3001

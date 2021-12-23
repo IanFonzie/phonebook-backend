@@ -51,18 +51,27 @@ app.get('/info', (req, res, next) => {
 app.get('/api/persons/:id', (req, res, next) => {
   Person.findById(req.params.id)
     .then(person => {
-      res.json(person)
+      if (person) {
+        res.json(person)
+      } else {
+        res.status(404).end()
+      }
     })
     .catch(error => {
-      res.status(404).end()
+      console.log(error)
+      res.status(400).send({ error: 'malformatted id' })
     })
 })
 
 app.delete('/api/persons/:id', (req, res, next) => {
-  const id = Number(req.params.id)
-  persons = persons.filter(person => person.id !== id)
-  
-  res.status(204).end()
+  Person.findByIdAndDelete(req.params.id)
+    .then(result => {
+      res.status(204).end()
+    })
+    .catch(error => {
+      console.log(error)
+      res.status(400).send({ error: 'malformatted id' })
+    })
 })
 
 app.post('/api/persons', (req, res, next) => {
@@ -72,7 +81,7 @@ app.post('/api/persons', (req, res, next) => {
     return res.status(400).json({error: 'name or number missing'})
   }
 
-  const exists = Person.find({name: body.name})
+  Person.find({name: body.name})
     .then(persons => {
       if (persons.length > 0) {
         return res.status(400).json({error: 'name must be unique'})

@@ -57,10 +57,7 @@ app.get('/api/persons/:id', (req, res, next) => {
         res.status(404).end()
       }
     })
-    .catch(error => {
-      console.log(error)
-      res.status(400).send({ error: 'malformatted id' })
-    })
+    .catch(error => next(error))
 })
 
 app.delete('/api/persons/:id', (req, res, next) => {
@@ -68,23 +65,20 @@ app.delete('/api/persons/:id', (req, res, next) => {
     .then(result => {
       res.status(204).end()
     })
-    .catch(error => {
-      console.log(error)
-      res.status(400).send({ error: 'malformatted id' })
-    })
+    .catch(error => next(error))
 })
 
 app.post('/api/persons', (req, res, next) => {
   const body = req.body
 
   if (!(body.name && body.number)) {
-    return res.status(400).json({error: 'name or number missing'})
+    return res.status(400).json({ error: 'name or number missing' })
   }
 
   Person.find({name: body.name})
     .then(persons => {
       if (persons.length > 0) {
-        return res.status(400).json({error: 'name must be unique'})
+        return res.status(400).json({ error: 'name must be unique' })
       }
       const person = new Person({
         name: body.name,
@@ -95,6 +89,18 @@ app.post('/api/persons', (req, res, next) => {
       })
     })
 })
+
+const errorHandler = (err, req, res, next) => {
+  console.log(err)
+
+  if (err.name === 'CastError') {
+    return res.status(400).send({ error: 'malformatted id' })
+  }
+
+  next(err)
+}
+
+app.use(errorHandler)
 
 const PORT = process.env.PORT
 app.listen(PORT, () => {

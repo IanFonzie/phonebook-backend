@@ -90,6 +90,25 @@ app.post('/api/persons', (req, res, next) => {
     })
 })
 
+app.put('/api/persons/:id', (req, res, next) => {
+  const body = req.body
+
+  if (!(body.name && body.number)) {
+    return res.status(400).json({ error: 'name or number missing' })
+  }
+
+  const person = {
+    name: body.name,
+    number: body.number
+  }
+
+  Person.findByIdAndUpdate(req.params.id, person, { new: true })
+    .then(updatedPerson => {
+      res.json(updatedPerson)
+    })
+    .catch(error => next(error))
+})
+
 const errorHandler = (err, req, res, next) => {
   console.log(err)
 

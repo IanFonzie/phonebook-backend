@@ -10,16 +10,16 @@ app.use(cors())
 app.use(express.static('build'))
 app.use(express.json())
 
-morgan.token('body', (req, res) => JSON.stringify(req.body))
+morgan.token('body', (req) => JSON.stringify(req.body))
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 
-app.get('/api/persons', (req, res, next) => {
+app.get('/api/persons', (req, res) => {
   Person.find({}).then(persons => {
     return res.json(persons)
   })
 })
 
-app.get('/info', (req, res, next) => {
+app.get('/info', (req, res) => {
   Person.find({}).then(persons => {
     const respBody = `<p>Phone book has info for ${persons.length} people.</p>` +
     `<p>${new Date()}</p>`
@@ -41,7 +41,7 @@ app.get('/api/persons/:id', (req, res, next) => {
 
 app.delete('/api/persons/:id', (req, res, next) => {
   Person.findByIdAndDelete(req.params.id)
-    .then(result => {
+    .then(() => {
       res.status(204).end()
     })
     .catch(error => next(error))
@@ -68,7 +68,7 @@ app.put('/api/persons/:id', (req, res, next) => {
   Person.findByIdAndUpdate(req.params.id, person, { new: true, runValidators: true })
     .then(updatedPerson => {
       if (updatedPerson) {
-        res.json(updatedPerson) 
+        res.json(updatedPerson)
       } else {
         res.status(404).end()
       }
@@ -82,7 +82,7 @@ const errorHandler = (err, req, res, next) => {
   if (err.name === 'CastError') {
     return res.status(400).send({ error: 'malformatted id' })
   } else if (err.name === 'ValidationError' || err.name === 'MongoServerError') {
-    return res.status(400).json({ error: err.message})
+    return res.status(400).json({ error: err.message })
   }
 
   next(err)
